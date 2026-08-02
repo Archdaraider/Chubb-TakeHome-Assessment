@@ -144,3 +144,31 @@ accepted the three-table transaction-ready design and optimistic locking. kept s
 ### check
 
 the schema test first failed with h2 `table "claims" not found`, then passed after flyway applied version 1. the adapter contract then failed compilation because `ClaimStore` and `ClaimEvidenceStore` did not exist. after implementation, 6 persistence tests passed, including a stale second save rejected by spring's optimistic locking exception. json was parsed back with jackson 3 and all required fields were asserted.
+
+## 2026-08-02 22:20
+
+### goal
+
+make every accepted claim command update business state, timeline, and outbox data as one transaction.
+
+### prompt summary
+
+asked ai to test the application boundary through real spring transactions and h2 storage. required exactly one timeline row and one outbox row per accepted command, stable not-found and conflict codes, no evidence on rejected domain rules, and a forced evidence failure after a claim save to prove the whole update rolls back.
+
+### ai suggestion
+
+keep command records small and let one service coordinate the aggregate and the two storage ports. use a test-only primary evidence decorator with a controllable failure switch; it delegates normally for the behavior tests and throws after the claim save only for the rollback proof. translate only stale persistence writes and leave domain rules unchanged.
+
+### decision
+
+accepted one outer `@Transactional` boundary per public command and the test-only failure decorator. rejected separate transactions for claim, timeline, and outbox because that could leave an updated claim without its audit or integration evidence. retained the real adapter stale-write test from the storage slice and added a focused application test for the stable `claim_conflict` translation.
+
+### codex skills used
+
+- `superpowers:test-driven-development` required the nine command scenarios to fail compilation before command records or service code existed.
+- `superpowers:executing-plans` kept each accepted operation to load or create, apply one change, save, append evidence, and return.
+- `superpowers:verification-before-completion` requires rollback counts, focused service tests, and the full build before commit.
+
+### check
+
+the red command test failed with 22 missing service and command symbols. after implementation, all 9 command tests passed. the forced evidence exception left the assignee null, the claim version at zero, and both evidence tables at one existing submission row. a rejected domain rule also left the stored snapshot and evidence counts unchanged.

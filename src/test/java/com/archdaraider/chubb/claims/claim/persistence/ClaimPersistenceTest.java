@@ -150,10 +150,10 @@ class ClaimPersistenceTest {
     first.assign("officer-7", NOW.plusSeconds(1));
     second.assign("officer-8", NOW.plusSeconds(1));
 
-        claimStore.save(first);
+    claimStore.save(first);
 
-        assertThatThrownBy(() -> claimStore.save(second))
-                .isInstanceOf(ObjectOptimisticLockingFailureException.class);
+    assertThatThrownBy(() -> claimStore.save(second))
+        .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     assertThat(claimStore.findById(saved.snapshot().id()).orElseThrow().snapshot().assigneeId())
         .isEqualTo("officer-7");
   }
