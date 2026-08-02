@@ -316,3 +316,31 @@ accepted a batch size of 100, one clock instant per batch, package-private entit
 ### check
 
 the first valid focused run failed compilation because `OutboxRelay` did not exist. after implementation, 3 relay tests passed with 0 failures, 0 errors, and 0 skipped. `spotless:apply` formatted the new java files. the first `clean verify` attempt could not delete the jar because the earlier demo process still held it; after identifying and stopping that exact process, the repeated gate passed 53 tests with 0 failures, 0 errors, and 0 skipped. no maven dependency or domain-package import changed.
+
+## 2026-08-03 02:20
+
+### goal
+
+support portfolio-wide exposure when the optional market filter is absent while preserving strict validation and filtered behavior.
+
+### prompt summary
+
+asked ai to make a missing or blank exposure market mean all markets, keep non-blank values restricted to exactly two letters, load all open claims when no market is supplied, and continue grouping only by currency. required singapore and australia claims in the same currency to combine without a filter while a singapore filter still isolates them.
+
+### ai suggestion
+
+return `null` from the api mapper for a missing or trimmed blank market, reuse the existing open-status repository query for the unfiltered path, and leave the query service's currency `TreeMap` unchanged. adding market to each exposure row was considered as a way to preserve origin in the portfolio response, but the user rejected it because the required response remains currency-only.
+
+### decision
+
+accepted one mapper branch and one persistence branch instead of adding another endpoint or response type. rejected market-plus-currency grouping, accepting arbitrary market strings, and changing the existing filtered exposure expectations. retained the current in-memory currency aggregation for the separate documentation decision in task 4.
+
+### codex skills used
+
+- `superpowers:test-driven-development` required both the http rejection and empty application result to fail before production code changed.
+- `superpowers:writing-good-tests` kept the expected cross-market totals literal and exercised the real mapper, repository, h2 database, and http boundary.
+- `superpowers:verification-before-completion` required focused API/query evidence and a fresh complete build before review.
+
+### check
+
+the red run executed 17 focused tests with 2 expected failures: unfiltered http exposure returned `400`, and direct unfiltered exposure returned an empty list. after the two production branches changed, all 17 focused tests passed. `spotless:apply` completed and `clean verify` passed 56 tests with 0 failures, 0 errors, and 0 skipped. the existing filtered exposure test remained unchanged and still isolated singapore claims. no dependency or domain-package import changed.

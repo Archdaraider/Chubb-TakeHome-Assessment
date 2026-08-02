@@ -104,6 +104,16 @@ class ClaimsQueryServiceTest {
   }
 
   @Test
+  void unfilteredExposureCombinesMarketsWithinEachCurrency() {
+    seedQueueAndExposureClaims();
+
+    assertThat(service.exposure(null))
+        .containsExactly(
+            new ExposureItem("AUD", new BigDecimal("900.00"), 2),
+            new ExposureItem("SGD", new BigDecimal("300.00"), 2));
+  }
+
+  @Test
   void approvingClaimReducesItsCurrencyExposure() {
     var data = seedQueueAndExposureClaims();
     var before = service.exposure("SG");

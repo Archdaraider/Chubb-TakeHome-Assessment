@@ -109,6 +109,28 @@ class ClaimsApiTest {
   }
 
   @Test
+  void exposureCombinesMarketsWhenTheMarketIsMissingOrBlank() throws Exception {
+    submitClaim("claimant-101", "SG", "100.00", "SGD");
+    submitClaim("claimant-202", "AU", "200.00", "SGD");
+
+    assertCombinedExposure(get("/exposure"));
+    assertCombinedExposure(get("/exposure").queryParam("market", " "));
+    mvc.perform(get("/exposure").queryParam("market", "SG"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].currency").value("SGD"))
+        .andExpect(jsonPath("$[0].amount").value(100.0))
+        .andExpect(jsonPath("$[0].claimCount").value(1));
+  }
+
+  @Test
+  void invalidMarketReturnsStableInputProblem() throws Exception {
+    mvc.perform(get("/exposure").queryParam("market", "SGP"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("query_invalid"));
+  }
+
+  @Test
   void badSubmissionReturnsStableValidationProblem() throws Exception {
     mvc.perform(
             post("/claims")
@@ -186,19 +208,24 @@ class ClaimsApiTest {
   }
 
   private String submitClaim(String claimantId, String loss, String currency) throws Exception {
+    return submitClaim(claimantId, "SG", loss, currency);
+  }
+
+  private String submitClaim(String claimantId, String market, String loss, String currency)
+      throws Exception {
     var body =
         """
                 {
                   "claimantId":"%s",
                   "type":"motor",
-                  "market":"SG",
+                  "market":"%s",
                   "incidentAt":"2026-08-01T12:00:00Z",
                   "description":"Rear bumper was damaged",
                   "estimatedLoss":%s,
                   "currency":"%s"
                 }
                 """
-            .formatted(claimantId, loss, currency);
+            .formatted(claimantId, market, loss, currency);
     return mvc.perform(post("/claims").contentType(MediaType.APPLICATION_JSON).content(body))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("/claims/")))
@@ -206,6 +233,17 @@ class ClaimsApiTest {
         .andReturn()
         .getResponse()
         .getHeader("Location");
+  }
+
+  private void assertCombinedExposure(
+      org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request)
+      throws Exception {
+    mvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].currency").value("SGD"))
+        .andExpect(jsonPath("$[0].amount").value(300.0))
+        .andExpect(jsonPath("$[0].claimCount").value(2));
   }
 
   private org.springframework.test.web.servlet.ResultActions apply(

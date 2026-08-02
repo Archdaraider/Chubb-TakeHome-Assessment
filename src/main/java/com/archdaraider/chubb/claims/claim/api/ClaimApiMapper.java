@@ -48,9 +48,10 @@ public class ClaimApiMapper {
 
   public String queryMarket(String value) {
     var normalized = normalize(value);
-    if (normalized == null
-        || normalized.length() != 2
-        || !normalized.chars().allMatch(Character::isLetter)) {
+    if (normalized == null || normalized.isBlank()) {
+      return null;
+    }
+    if (normalized.length() != 2 || !normalized.chars().allMatch(Character::isLetter)) {
       throw new ApiInputException("query_invalid", "market must contain two letters");
     }
     return normalized.toUpperCase(Locale.ROOT);

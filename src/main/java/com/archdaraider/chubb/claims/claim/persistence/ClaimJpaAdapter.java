@@ -78,7 +78,9 @@ public class ClaimJpaAdapter implements ClaimStore {
   public List<Claim> findOpenByMarket(String market) {
     var normalizedMarket = normalize(market);
     if (normalizedMarket == null) {
-      return List.of();
+      return repository.findByStatusInOrderBySubmittedAtAsc(OPEN_STATUSES).stream()
+          .map(ClaimJpaAdapter::toDomain)
+          .toList();
     }
     return repository
         .findByMarketAndStatusInOrderBySubmittedAtAsc(
