@@ -286,3 +286,33 @@ accepted the separate security gate. the first completed scan failed and found f
 ### check
 
 temurin java `21.0.12` and maven `3.9.16` were active. after the dependency update, `mvnw.cmd clean verify` passed 50 tests with 0 failures, 0 errors, and 0 skipped, and spotless kept 46 java files clean. the repeated owasp scan analyzed 65 dependencies, reported no dependencies with findings, and exited successfully at the cvss 7 threshold. the upgraded packaged jar passed the full live check again. tracked-content scans found no conflict markers, unfinished markers, credentials, email-like data, uppercase markdown headings, generated output, local databases, or framework imports in the domain package.
+
+## 2026-08-03 02:00
+
+### goal
+
+make stored outbox rows observable and processable without adding a kafka client or weakening the transaction boundary.
+
+### prompt summary
+
+asked ai to add a bounded oldest-first log-only relay in the persistence package, stamp `processed_at` from the existing clock, keep scheduling separate and property-controlled, disable scheduling in tests, and prove the relay directly through real h2 transactions. prohibited new maven dependencies, public entity setters, scheduler-driven tests, and framework imports in the domain package.
+
+### ai suggestion
+
+use a derived repository query capped at 100 rows, one transactional relay method, jpa dirty checking for the processing stamp, and a separate five-second scheduled trigger enabled unless explicitly disabled. use captured application output plus database reads to prove log fields, order, exact clock time, batch limits, no repeat processing, and rollback visibility. a broker-backed publisher and schedule-level integration test were identified as normal production options, but the supplied review direction rejected both for this task.
+
+### decision
+
+accepted a batch size of 100, one clock instant per batch, package-private entity access and mutation, and direct relay integration tests. rejected spring-kafka, a broker, a public `processedAt` setter, an unbounded pending query, and tests that wait for the scheduler because they would expand scope or make database row assertions timing-dependent.
+
+### codex skills used
+
+- `superpowers:brainstorming` checked the requested relay and scheduler boundary before code while keeping the user's already selected design.
+- `superpowers:writing-plans` reduced the change to a test-first task with exact files and a pre-commit review gate.
+- `superpowers:test-driven-development` required the relay test to fail on the missing type before production code and then pass against the real repository and database.
+- `superpowers:systematic-debugging` traced the first clean failure to the previously running demo jar before stopping only that verified process.
+- `superpowers:verification-before-completion` required fresh focused and full-suite evidence before this review stop.
+
+### check
+
+the first valid focused run failed compilation because `OutboxRelay` did not exist. after implementation, 3 relay tests passed with 0 failures, 0 errors, and 0 skipped. `spotless:apply` formatted the new java files. the first `clean verify` attempt could not delete the jar because the earlier demo process still held it; after identifying and stopping that exact process, the repeated gate passed 53 tests with 0 failures, 0 errors, and 0 skipped. no maven dependency or domain-package import changed.

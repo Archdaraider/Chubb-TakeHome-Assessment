@@ -9,3 +9,8 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+claims:
+  outbox:
+    relay:
+      enabled: false

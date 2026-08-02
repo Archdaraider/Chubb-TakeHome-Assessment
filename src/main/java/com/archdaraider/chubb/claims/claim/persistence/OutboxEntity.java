@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -37,5 +38,21 @@ class OutboxEntity {
     this.eventType = eventType;
     this.payload = payload;
     this.occurredAt = occurredAt;
+  }
+
+  UUID claimId() {
+    return claimId;
+  }
+
+  String eventType() {
+    return eventType;
+  }
+
+  Instant occurredAt() {
+    return occurredAt;
+  }
+
+  void markProcessed(Instant processedAt) {
+    this.processedAt = Objects.requireNonNull(processedAt);
   }
 }
