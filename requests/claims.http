@@ -1,0 +1,90 @@
+@baseUrl = http://localhost:8080
+@claimId = {{submit.response.body.$.id}}
+
+### health
+GET {{baseUrl}}/actuator/health
+
+### submit claim
+# @name submit
+POST {{baseUrl}}/claims
+Content-Type: application/json
+
+{
+  "claimantId": "claimant-http-101",
+  "type": "motor",
+  "market": "SG",
+  "incidentAt": "2026-08-01T12:00:00Z",
+  "description": "Fictional rear bumper damage for the request sample",
+  "estimatedLoss": 2800.00,
+  "currency": "SGD"
+}
+
+### get claim
+GET {{baseUrl}}/claims/{{claimId}}
+
+### assign claim
+POST {{baseUrl}}/claims/{{claimId}}/assignment
+Content-Type: application/json
+
+{
+  "officerId": "officer-http-7"
+}
+
+### start review
+POST {{baseUrl}}/claims/{{claimId}}/actions
+Content-Type: application/json
+
+{
+  "action": "startReview",
+  "officerId": "officer-http-7"
+}
+
+### request information
+POST {{baseUrl}}/claims/{{claimId}}/actions
+Content-Type: application/json
+
+{
+  "action": "requestMoreInformation",
+  "officerId": "officer-http-7",
+  "reason": "provide a fictional repair invoice"
+}
+
+### provide information
+POST {{baseUrl}}/claims/{{claimId}}/information
+Content-Type: application/json
+
+{
+  "claimantId": "claimant-http-101",
+  "information": "fictional invoice reference inv-http-22"
+}
+
+### resume review
+POST {{baseUrl}}/claims/{{claimId}}/actions
+Content-Type: application/json
+
+{
+  "action": "resumeReview",
+  "officerId": "officer-http-7"
+}
+
+### approve claim
+POST {{baseUrl}}/claims/{{claimId}}/actions
+Content-Type: application/json
+
+{
+  "action": "approve",
+  "officerId": "officer-http-7",
+  "reason": "fictional policy cover confirmed"
+}
+
+### open work queue
+GET {{baseUrl}}/work-queue
+
+### filtered work queue
+GET {{baseUrl}}/work-queue?status=underReview&assigneeId=demo-officer-au
+
+### singapore exposure
+GET {{baseUrl}}/exposure?market=SG
+
+### openapi
+GET {{baseUrl}}/v3/api-docs

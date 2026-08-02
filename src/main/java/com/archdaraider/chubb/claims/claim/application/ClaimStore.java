@@ -14,4 +14,6 @@ public interface ClaimStore {
   List<Claim> findForQueue(ClaimStatus status, String assigneeId);
 
   List<Claim> findOpenByMarket(String market);
+
+  boolean hasAny();
 }

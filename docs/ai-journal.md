@@ -228,3 +228,32 @@ accepted seven public route shapes and a single exception policy. chose 409 for 
 ### check
 
 after the test syntax correction, the red run had 8 failures: required endpoints returned 404 and openapi lacked the paths. after implementation, all 8 api tests passed. the full workflow produced seven ordered events from submission through approval, problem responses exposed the expected stable codes, exposure stayed currency-separated, and `/v3/api-docs` listed claims, assignment, actions, information, queue, and exposure routes.
+
+## 2026-08-02 22:36
+
+### goal
+
+make the assessment easy to run and prove the packaged service works outside the test process.
+
+### prompt summary
+
+asked ai first to turn the demo requirement into a constrained implementation prompt: use only fictional identities, seed through public application commands, make repeated startup safe, and do not bypass audit or outbox behavior. then asked it to generate a reviewer request collection and a bounded powershell process check with exact expected queue counts, exposure values, timeline size, openapi paths, process cleanup, and temporary-path safety.
+
+### ai suggestion
+
+put seed data behind a `demo` spring profile, stop when any claim already exists, and use the same command service as normal requests. run the packaged jar on a free port with a fresh h2 file under the system temp folder, poll health instead of sleeping for a fixed startup time, assert business values before and after approval, and always stop the child process in `finally`.
+
+### decision
+
+accepted three small fictional claims and the isolated live process. kept the reviewer commands in a plain http file so no extra client is needed. the first live run showed all three claims in the json body but powershell counted the top-level response as one item; evidence showed `Invoke-RestMethod` had returned the array without pipeline enumeration. removed the unnecessary array wrapper instead of changing the api or weakening the expected count.
+
+### codex skills used
+
+- `superpowers:executing-plans` kept the seed values, request flow, live assertions, and readme sections aligned with the written task.
+- `superpowers:test-driven-development` required `DemoDataTest` to fail on the missing demo component before the seed implementation was added.
+- `superpowers:systematic-debugging` captured the real queue value and count, proved the service returned three claims, and isolated the powershell array behavior before the one-line pattern correction.
+- `superpowers:verification-before-completion` requires focused tests, the full build, a packaged live run, repository scans, and remote revision checks before handoff.
+
+### check
+
+the red demo test failed compilation because `DemoData` did not exist. the implemented seed test passed twice-called idempotency with 3 claims, 8 timeline rows, and 8 outbox rows. `mvnw.cmd clean verify` then passed 50 tests with no failures or skips and spotless reported 46 clean java files. the packaged live check passed on a free port: demo queue count 3, new claim timeline count 4, sgd exposure `16600.00 / 3` before approval and `13800.00 / 2` after approval, and all three required openapi paths present.

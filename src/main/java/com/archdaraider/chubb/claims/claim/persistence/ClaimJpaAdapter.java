@@ -88,6 +88,12 @@ public class ClaimJpaAdapter implements ClaimStore {
         .toList();
   }
 
+  @Override
+  @Transactional(readOnly = true)
+  public boolean hasAny() {
+    return repository.count() > 0;
+  }
+
   private static ClaimEntity fromSnapshot(ClaimSnapshot snapshot) {
     return new ClaimEntity(
         snapshot.id(),

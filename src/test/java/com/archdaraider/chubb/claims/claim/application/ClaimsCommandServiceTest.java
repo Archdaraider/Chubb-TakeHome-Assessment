@@ -291,5 +291,10 @@ class ClaimsCommandServiceTest {
     public List<Claim> findOpenByMarket(String market) {
       return List.of();
     }
+
+    @Override
+    public boolean hasAny() {
+      return true;
+    }
   }
 }
