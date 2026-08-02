@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: claims-service
+  datasource:
+    url: jdbc:h2:file:./data/claims;AUTO_SERVER=TRUE
+    username: sa
+    password:
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never

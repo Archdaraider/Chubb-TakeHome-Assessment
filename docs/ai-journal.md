@@ -59,3 +59,32 @@ accepted the eight task sequence and the explicit ports between the domain, appl
 ### check
 
 official spring boot 4.0.7 documentation confirmed the non-deprecated `spring-boot-starter-webmvc`, jpa, flyway, actuator, validation, and test starters. apache documentation confirmed wrapper plugin 3.3.4. springdoc and spotless release documentation confirmed the planned plugin versions. no java source, build file, wrapper, commit, or push was created during planning.
+
+## 2026-08-02 22:07
+
+### goal
+
+create the smallest runnable java service with a real health check and a repeatable local build.
+
+### prompt summary
+
+asked ai to execute the approved plan without more permission stops while keeping changes in meaningful commits. constrained the work to java 21, spring boot 4.0.7, a local ignored toolchain, the maven wrapper, test-first behavior, lower-case messages, real timestamps, and no manufactured delays or backdated activity.
+
+### ai suggestion
+
+download temurin 21 from adoptium, verify its published sha-256, generate only the standard wrapper assets through spring initializr, then write a black-box health test before the spring application. use actuator for health and keep both local and test database configuration ready for the later flyway migration.
+
+### decision
+
+accepted temurin 21.0.12+8, wrapper 3.3.4 with maven 3.9.16, and the spring boot baseline. when the first initializr request returned `400`, checked current metadata and found that the generator requires `4.0.7.RELEASE` and dependency id `web`; used those values only to obtain wrapper assets while retaining `spring-boot-starter-webmvc` in the reviewed project pom.
+
+### codex skills used
+
+- `superpowers:executing-plans` kept this slice aligned with the written file and command contract.
+- `superpowers:test-driven-development` required the health behavior to fail before `ClaimsApplication` existed and pass only after the minimum application and configuration were added.
+- `superpowers:systematic-debugging` traced the wrapper request failure to invalid current initializr parameter values before retrying.
+- `superpowers:verification-before-completion` required fresh test, format, and package evidence before the slice could be committed.
+
+### check
+
+the jdk archive matched sha-256 `9ba963ee2371874a74185d18bc7bb2ab9407df7683300855ed7606e0662321d0`. the red run executed one test and failed because no `@SpringBootConfiguration` existed. after adding two production classes and two yaml files, the focused health test passed. `mvnw.cmd spotless:apply` and `mvnw.cmd verify` both completed successfully, producing `target/claims-service-0.0.1-SNAPSHOT.jar`.

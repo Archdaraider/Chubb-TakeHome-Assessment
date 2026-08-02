@@ -2,6 +2,8 @@
 
 > **for agentic workers:** required sub-skill: use `superpowers:executing-plans` to implement this plan task by task. steps use checkbox (`- [ ]`) syntax for tracking. the user requires inline execution, a review stop after every task, and separate approval before every commit and push.
 
+> **execution update:** after approving the plan commit, the user asked execution to continue without further permission stops. commits and pushes remain small, factual, and based on real completion times.
+
 **goal:** build a tested spring boot backend for claim intake, officer work, lifecycle decisions, claimant information, audit history, and open exposure.
 
 **architecture:** use one spring boot process with domain, application, persistence, and api packages. keep the claim aggregate free of spring and jpa, save claim changes with timeline and outbox evidence in one transaction, and expose immediate user operations through rest.
