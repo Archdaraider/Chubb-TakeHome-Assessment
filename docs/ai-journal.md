@@ -372,3 +372,31 @@ accepted one persistence integration test and two derived methods for status-plu
 ### check
 
 before the change, all 7 current query-service tests passed unchanged, while the new persistence test failed because Hibernate loaded 2 claim entities instead of 1. after the derived query change, the new test passed and the same 7 query-service tests passed without modification. `spotless:apply` completed and `clean verify` passed 57 tests with 0 failures, 0 errors, and 0 skipped. no maven dependency or domain-package import changed.
+
+## 2026-08-03 02:39
+
+### goal
+
+make the submission documents match the implemented behavior and the backend assessment evidence without adding production-scale features at the end of the sprint.
+
+### prompt summary
+
+asked ai to correct the analysis claim about database filtering, document the in-process log-only relay, mark the exposure market filter as optional, update the evidence map and test counts, and verify the final packaged application. required the original backend brief to remain the source of assessment criteria and kept pagination, sql aggregation, kafka, authentication, and new dependencies out of scope.
+
+### ai suggestion
+
+compare each documentation claim with the repository and the original brief before editing. ai also identified keyset pagination, a database `group by` and `sum` exposure query, and a broker-backed publisher as possible production improvements. the user explicitly rejected implementing them in this sprint, so they were recorded as deliberate limits instead of being added as last-minute code.
+
+### decision
+
+accepted documentation-only corrections and a concise brief-alignment section. queue predicates are described as database work, while exposure is accurately described as loading open rows and aggregating them in application memory. pagination was left out because the assessment data set is small and keyset pagination deserves a measured production design. sql aggregation was left out because the current in-memory path keeps currency grouping easy to test at this scale; a measured `group by` and `sum` query is the production direction. the log-only relay is described as evidence of the outbox lifecycle, not kafka delivery.
+
+### codex skills used
+
+- `documents:documents` guided a structural inspection of the original backend assessment brief before checking deliverable alignment.
+- `superpowers:verification-before-completion` required current test totals, repository scope checks, and a packaged-process run before the submission claim.
+- `superpowers:systematic-debugging` traced a missing shell `java_home` to the ignored repository-local java 21 toolchain without changing the build.
+
+### check
+
+the evidence map now matches 57 tests and 49 java files. `spotless:apply` completed and `clean verify` passed 57 tests with 0 failures, 0 errors, and 0 skipped. the repackaged jar passed `scripts/live-check.ps1 -SkipBuild` on a free port with 3 demo queue items and the expected workflow, exposure, timeline, health, and openapi checks. no maven dependency, production java source, test source, or live-check assertion changed in this task.

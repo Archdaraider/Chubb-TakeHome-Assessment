@@ -46,7 +46,7 @@ claimant information is an audited event while the claim stays in `moreInformati
 
 ## rest and outbox
 
-rest is used for commands that need an immediate answer. each accepted command saves the claim, one timeline row, and one outbox row in the same transaction. the outbox is the safe handoff point for a later kafka publisher. a live broker is not added because it would add setup without improving this assessment workflow.
+rest is used for commands that need an immediate answer. each accepted command saves the claim, one timeline row, and one outbox row in the same transaction. a bounded in-process relay reads pending rows oldest-first, logs the claim id and event metadata, and stamps `processed_at`. it is log-only evidence of the handoff lifecycle; a kafka broker and publisher are deliberately not included.
 
 ## requirements
 
@@ -108,7 +108,7 @@ the request collection at `requests/claims.http` can also run the full workflow 
 | `POST` | `/claims/{claimId}/actions` | change claim state |
 | `POST` | `/claims/{claimId}/information` | add claimant information |
 | `GET` | `/work-queue` | list open claims |
-| `GET` | `/exposure?market=SG` | group open loss by currency |
+| `GET` | `/exposure` | group open loss by currency; optional `market=SG` filter |
 | `GET` | `/actuator/health` | check service health |
 | `GET` | `/v3/api-docs` | read openapi json |
 
@@ -140,15 +140,17 @@ demo names and ids are fictional. no names, contact details, documents, credenti
 
 - h2 keeps local review simple; production should use a managed relational database.
 - claimant and officer ids show ownership rules but are not authentication. production needs identity, roles, and authorization.
-- the outbox is durable evidence, but no live kafka publisher is included in this sprint.
+- the outbox relay is in-process and log-only; no kafka broker or live publisher is included in this sprint.
+- the officer queue is unpaged, and exposure is grouped and summed in application memory.
 - attachments, payments, fraud scoring, notifications, and policy lookup are outside this focused slice.
 
 ## next production work
 
 - add oauth2 resource server security and role checks
 - use postgres and integration tests with testcontainers
-- publish pending outbox rows with retry and monitoring
-- add pagination and indexed search for large queues
+- publish pending outbox rows to kafka with idempotency, retry, and monitoring
+- add keyset pagination and indexed search for large queues
+- move exposure grouping and summing to a measured sql aggregate when data volume requires it
 - add pii controls, retention rules, and audit access policy
 - add metrics, tracing, alerts, and deployment files
 
