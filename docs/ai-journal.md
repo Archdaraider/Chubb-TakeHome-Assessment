@@ -344,3 +344,31 @@ accepted one mapper branch and one persistence branch instead of adding another 
 ### check
 
 the red run executed 17 focused tests with 2 expected failures: unfiltered http exposure returned `400`, and direct unfiltered exposure returned an empty list. after the two production branches changed, all 17 focused tests passed. `spotless:apply` completed and `clean verify` passed 56 tests with 0 failures, 0 errors, and 0 skipped. the existing filtered exposure test remained unchanged and still isolated singapore claims. no dependency or domain-package import changed.
+
+## 2026-08-03 02:25
+
+### goal
+
+push both work-queue predicates into the database so a combined status and assignee request does not load unrelated claims.
+
+### prompt summary
+
+asked ai to add the two missing spring data derived query paths, remove the adapter's java filtering, preserve the closed-status short-circuit, leave every existing query-service test unchanged, and add one test that distinguishes sql filtering from equal-looking in-memory results.
+
+### ai suggestion
+
+measure Hibernate's real entity load count around a combined status and assignee request after inserting two claims with the same status and different officers. this proves where filtering occurs without adding a sql inspection dependency. a mock-only repository call test and a custom jpql query were considered as shorter options, but the user direction rejected both in favour of real database evidence and derived methods.
+
+### decision
+
+accepted one persistence integration test and two derived methods for status-plus-assignee and open-statuses-plus-assignee. removed the now-unused assignee-only query and both stream filters. rejected changes to query-service expectations, custom jpql, and any change to the closed-status early return because the task is a query-efficiency correction, not a behavior change.
+
+### codex skills used
+
+- `superpowers:test-driven-development` required the new entity-load assertion to fail before the repository paths changed.
+- `superpowers:writing-good-tests` led to real Hibernate statistics rather than a mock that could only confirm its own setup.
+- `superpowers:verification-before-completion` required the unchanged query suite and the complete build to pass before review.
+
+### check
+
+before the change, all 7 current query-service tests passed unchanged, while the new persistence test failed because Hibernate loaded 2 claim entities instead of 1. after the derived query change, the new test passed and the same 7 query-service tests passed without modification. `spotless:apply` completed and `clean verify` passed 57 tests with 0 failures, 0 errors, and 0 skipped. no maven dependency or domain-package import changed.

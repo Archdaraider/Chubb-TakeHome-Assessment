@@ -57,20 +57,20 @@ public class ClaimJpaAdapter implements ClaimStore {
 
     var normalizedAssignee = normalize(assigneeId);
     List<ClaimEntity> entities;
-    if (status != null) {
+    if (status != null && normalizedAssignee != null) {
+      entities =
+          repository.findByStatusAndAssigneeIdOrderBySubmittedAtAsc(status, normalizedAssignee);
+    } else if (status != null) {
       entities = repository.findByStatusOrderBySubmittedAtAsc(status);
     } else if (normalizedAssignee != null) {
-      entities = repository.findByAssigneeIdOrderBySubmittedAtAsc(normalizedAssignee);
+      entities =
+          repository.findByStatusInAndAssigneeIdOrderBySubmittedAtAsc(
+              OPEN_STATUSES, normalizedAssignee);
     } else {
       entities = repository.findByStatusInOrderBySubmittedAtAsc(OPEN_STATUSES);
     }
 
-    return entities.stream()
-        .filter(entity -> OPEN_STATUSES.contains(entity.status()))
-        .filter(
-            entity -> normalizedAssignee == null || normalizedAssignee.equals(entity.assigneeId()))
-        .map(ClaimJpaAdapter::toDomain)
-        .toList();
+    return entities.stream().map(ClaimJpaAdapter::toDomain).toList();
   }
 
   @Override

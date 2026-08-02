@@ -11,8 +11,10 @@ import com.archdaraider.chubb.claims.claim.domain.ClaimChange;
 import com.archdaraider.chubb.claims.claim.domain.ClaimStatus;
 import com.archdaraider.chubb.claims.claim.domain.ClaimSubmission;
 import com.archdaraider.chubb.claims.claim.domain.ClaimType;
+import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
 import java.time.Instant;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,7 @@ class ClaimPersistenceTest {
   @Autowired private ClaimStore claimStore;
   @Autowired private ClaimEvidenceStore evidenceStore;
   @Autowired private JsonMapper jsonMapper;
+  @Autowired private EntityManagerFactory entityManagerFactory;
 
   @BeforeEach
   void clearDatabase() {
@@ -125,6 +128,32 @@ class ClaimPersistenceTest {
     assertThat(claimStore.findForQueue(ClaimStatus.MORE_INFORMATION_REQUIRED, "officer-8"))
         .extracting(item -> item.snapshot().id())
         .containsExactly(waiting.snapshot().id());
+  }
+
+  @Test
+  void combinedQueuePredicateLoadsOnlyTheMatchingRow() {
+    var matching = newClaim("c-1", "SG", "100", "SGD");
+    matching.assign("officer-7", NOW.plusSeconds(1));
+    matching.apply(ClaimAction.START_REVIEW, "officer-7", null, NOW.plusSeconds(2));
+    matching = claimStore.save(matching);
+    var otherOfficer = newClaim("c-2", "SG", "200", "SGD");
+    otherOfficer.assign("officer-8", NOW.plusSeconds(1));
+    otherOfficer.apply(ClaimAction.START_REVIEW, "officer-8", null, NOW.plusSeconds(2));
+    claimStore.save(otherOfficer);
+
+    var statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+    var wasEnabled = statistics.isStatisticsEnabled();
+    statistics.setStatisticsEnabled(true);
+    statistics.clear();
+    try {
+      assertThat(claimStore.findForQueue(ClaimStatus.UNDER_REVIEW, "officer-7"))
+          .extracting(item -> item.snapshot().id())
+          .containsExactly(matching.snapshot().id());
+      assertThat(statistics.getEntityLoadCount()).isOne();
+    } finally {
+      statistics.clear();
+      statistics.setStatisticsEnabled(wasEnabled);
+    }
   }
 
   @Test
