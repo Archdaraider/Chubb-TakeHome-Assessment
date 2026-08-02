@@ -200,3 +200,31 @@ accepted currency-specific exposure rows and open-only queue semantics. while te
 ### check
 
 the first query run failed compilation as planned. the initial implementation passed 5 of 6 tests; the remaining failure showed `100` versus `100.00`. after canonical money validation, 6 query tests and 19 domain tests passed together. singapore exposure was `AUD 300.00 / 1` and `SGD 300.00 / 2`; approving the `SGD 200.00` claim reduced that group to `SGD 100.00 / 1` without changing the aud group.
+
+## 2026-08-02 22:28
+
+### goal
+
+expose the full claim workflow as a small, documented json api with stable client-safe errors.
+
+### prompt summary
+
+asked ai to drive the rest boundary with raw json and mockmvc rather than serializing java request objects. required all command and read routes, 201 plus location for intake, lower camel enum values, validation, stable 400/404/409 problem codes, filtered queue and exposure responses, and openapi coverage of every public path.
+
+### ai suggestion
+
+keep json annotations and validation outside the domain. map strings to domain enums with case-insensitive helpers, return string-based response records, and centralize exceptions as spring `ProblemDetail` values that include a stable code but no stack trace or database message. use claimant and officer ids as explicit demo identity inputs only, not as authentication.
+
+### decision
+
+accepted seven public route shapes and a single exception policy. chose 409 for lifecycle and optimistic conflicts, 404 only for missing claims, and 400 for malformed, validation, action, or query inputs. added maximum lengths at the api boundary to match storage limits. retained the sprint identity shortcut and documented that production authentication and authorization remain future work.
+
+### codex skills used
+
+- `superpowers:test-driven-development` required eight black-box api tests before controller code; the real red run reached spring and failed all eight on missing routes or openapi paths.
+- `superpowers:systematic-debugging` corrected invalid one-line java text-block syntax before accepting the behavior red, so a test-source mistake was not confused with an application failure.
+- `superpowers:verification-before-completion` requires focused api, openapi, full suite, formatting, and response checks before commit.
+
+### check
+
+after the test syntax correction, the red run had 8 failures: required endpoints returned 404 and openapi lacked the paths. after implementation, all 8 api tests passed. the full workflow produced seven ordered events from submission through approval, problem responses exposed the expected stable codes, exposure stayed currency-separated, and `/v3/api-docs` listed claims, assignment, actions, information, queue, and exposure routes.
