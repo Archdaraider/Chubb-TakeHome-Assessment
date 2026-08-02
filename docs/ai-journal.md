@@ -88,3 +88,31 @@ accepted temurin 21.0.12+8, wrapper 3.3.4 with maven 3.9.16, and the spring boot
 ### check
 
 the jdk archive matched sha-256 `9ba963ee2371874a74185d18bc7bb2ab9407df7683300855ed7606e0662321d0`. the red run executed one test and failed because no `@SpringBootConfiguration` existed. after adding two production classes and two yaml files, the focused health test passed. `mvnw.cmd spotless:apply` and `mvnw.cmd verify` both completed successfully, producing `target/claims-service-0.0.1-SNAPSHOT.jar`.
+
+## 2026-08-02 22:10
+
+### goal
+
+make the claim lifecycle explicit and test it without spring, json, or database concerns.
+
+### prompt summary
+
+asked ai to turn the approved state diagram into a pure java aggregate. required stable lower snake case rule codes, normalized market and currency codes, one assigned officer, claimant-only information, reasons for consequential decisions, immutable snapshots, and an explicit list of allowed state and action pairs.
+
+### ai suggestion
+
+use records for submission, snapshot, and change data, small enums with lower camel case external values, and one aggregate as the only place where state changes. suggested treating claimant information as an audited event that leaves the claim in `moreInformationRequired` until the officer explicitly resumes review.
+
+### decision
+
+accepted the explicit transition table and the separate claimant event. rejected an automatic return to review after claimant information because it would hide the officer handoff and make the workflow less clear. kept `decisionReason` only for approval or rejection; the information request reason stays on its timeline change.
+
+### codex skills used
+
+- `superpowers:executing-plans` kept the public methods and stable codes aligned with the agreed domain contract.
+- `superpowers:test-driven-development` split the work into missing-type red, intake and assignment green, lifecycle red, and full lifecycle green.
+- `superpowers:verification-before-completion` required the focused domain test and the full maven gate before commit.
+
+### check
+
+the first `mvnw.cmd -Dtest=ClaimTest test` failed compilation with the expected missing domain types. the intake and assignment subset then passed 9 parameter-expanded tests. the full suite next ran 18 tests with 6 expected lifecycle errors. after implementing only the five allowed transitions, all 18 domain tests passed. the final full verification also includes the earlier health test.
