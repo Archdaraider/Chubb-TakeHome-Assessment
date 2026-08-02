@@ -1,0 +1,27 @@
+# local tools
+.tools/
+
+# build output
+target/
+
+# local data
+data/
+*.db
+*.mv.db
+*.trace.db
+*.log
+
+# editor files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# local settings
+.env
+
+# operating system files
+.DS_Store
+Thumbs.db
