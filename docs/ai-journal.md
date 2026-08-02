@@ -116,3 +116,31 @@ accepted the explicit transition table and the separate claimant event. rejected
 ### check
 
 the first `mvnw.cmd -Dtest=ClaimTest test` failed compilation with the expected missing domain types. the intake and assignment subset then passed 9 parameter-expanded tests. the full suite next ran 18 tests with 6 expected lifecycle errors. after implementing only the five allowed transitions, all 18 domain tests passed. the final full verification also includes the earlier health test.
+
+## 2026-08-02 22:16
+
+### goal
+
+persist claims while keeping an ordered audit trail, a publishable outbox record, and safe concurrent updates.
+
+### prompt summary
+
+asked ai to design the storage boundary from failure cases first: missing schema, full snapshot round-trip, timeline ordering, valid outbox json, open queue and market filtering, and two writers using the same version. required flyway ownership of the schema, hibernate validation, nullable new-aggregate versions, and no jpa entities outside the adapter package.
+
+### ai suggestion
+
+use three linked tables and one evidence append that writes both timeline and outbox records. use `EntityManager.persist` only when the domain version is null and `merge` with the exact detached version otherwise. serialize a small stable outbox envelope with claim id, event type, resulting status, and occurrence time.
+
+### decision
+
+accepted the three-table transaction-ready design and optimistic locking. kept spring boot's managed h2 version even though flyway logs that h2 2.4.240 is newer than its latest verified 2.3.232, because migration and validation pass and pinning an older transitive version only to hide a warning would weaken the managed dependency baseline. corrected one test that assumed insertion order for identical submitted timestamps; the contract orders by time and does not invent an order for ties.
+
+### codex skills used
+
+- `superpowers:test-driven-development` required a missing-table red before the migration and a missing-adapter red before jpa code.
+- `superpowers:systematic-debugging` traced the one queue failure to equal test timestamps and used the smallest test correction without changing production behavior.
+- `superpowers:verification-before-completion` requires the focused persistence suite, full build, formatting, and diff checks before commit.
+
+### check
+
+the schema test first failed with h2 `table "claims" not found`, then passed after flyway applied version 1. the adapter contract then failed compilation because `ClaimStore` and `ClaimEvidenceStore` did not exist. after implementation, 6 persistence tests passed, including a stale second save rejected by spring's optimistic locking exception. json was parsed back with jackson 3 and all required fields were asserted.
