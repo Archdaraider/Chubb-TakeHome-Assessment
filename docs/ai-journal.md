@@ -257,3 +257,32 @@ accepted three small fictional claims and the isolated live process. kept the re
 ### check
 
 the red demo test failed compilation because `DemoData` did not exist. the implemented seed test passed twice-called idempotency with 3 claims, 8 timeline rows, and 8 outbox rows. `mvnw.cmd clean verify` then passed 50 tests with no failures or skips and spotless reported 46 clean java files. the packaged live check passed on a free port: demo queue count 3, new claim timeline count 4, sgd exposure `16600.00 / 3` before approval and `13800.00 / 2` after approval, and all three required openapi paths present.
+
+## 2026-08-02 23:05
+
+### goal
+
+finish with fresh build, dependency, security, live-process, repository, and remote evidence instead of relying on earlier checks.
+
+### prompt summary
+
+asked ai first to generate a strict evidence ladder for final review: identify the java and maven versions, rebuild from clean output, count every test result, inspect the resolved dependency tree, fail on cvss 7 or higher, treat an unavailable feed as a limitation, rerun the packaged workflow, scan tracked content, map every acceptance criterion, and compare local and remote revisions. explicitly prohibited vulnerability suppressions and required another full regression run after any dependency fix.
+
+### ai suggestion
+
+run owasp dependency-check as a separate gate because a green application suite cannot prove dependency safety. use its json report to identify exact affected artifacts and fixed versions, prefer compatible patch lines, and keep the scanner report under ignored build output. add a reviewer-facing analysis that records decisions and evidence without exposing private chain-of-thought.
+
+### decision
+
+accepted the separate security gate. the first completed scan failed and found five affected dependencies, including critical and high tomcat findings plus swagger ui bundle findings. rejected a suppression file. upgraded to spring boot `4.1.0`, springdoc `3.1.0`, tomcat `11.0.24`, jackson 2 `2.21.5`, log4j `2.25.5`, and swagger ui `5.32.11`, then repeated every relevant gate. kept the owasp limitation visible: nvd, known exploited vulnerabilities, and retirejs ran, but sonatype oss index requires credentials and was disabled.
+
+### codex skills used
+
+- `superpowers:executing-plans` kept the final commands and evidence aligned with the written clean gate.
+- `superpowers:systematic-debugging` treated the scanner failure as a dependency defect, read the machine report, found fixed lines, and changed versions without hiding findings.
+- `superpowers:verification-before-completion` required a fresh complete suite, repeated security scan, live process, content scan, diff check, and revision check before any completion claim.
+- `superpowers:finishing-a-development-branch` confirmed this is a normal repository on `main` tracking `origin/main`; the user had already authorized direct final pushes, so no worktree or merge cleanup is needed.
+
+### check
+
+temurin java `21.0.12` and maven `3.9.16` were active. after the dependency update, `mvnw.cmd clean verify` passed 50 tests with 0 failures, 0 errors, and 0 skipped, and spotless kept 46 java files clean. the repeated owasp scan analyzed 65 dependencies, reported no dependencies with findings, and exited successfully at the cvss 7 threshold. the upgraded packaged jar passed the full live check again. tracked-content scans found no conflict markers, unfinished markers, credentials, email-like data, uppercase markdown headings, generated output, local databases, or framework imports in the domain package.

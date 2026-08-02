@@ -72,6 +72,14 @@ the service starts on `http://localhost:8080`. local data is stored under ignore
 
 `verify` runs the unit and integration tests, builds the jar, and checks java formatting.
 
+run the dependency security gate with:
+
+```powershell
+.\mvnw.cmd org.owasp:dependency-check-maven:12.2.2:check "-DfailBuildOnCVSS=7"
+```
+
+the first run can take several minutes while it builds the local vulnerability database. the html report is written under ignored `target/`.
+
 ## demo
 
 start with three fictional claims:
