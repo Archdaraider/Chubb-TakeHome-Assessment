@@ -172,3 +172,31 @@ accepted one outer `@Transactional` boundary per public command and the test-onl
 ### check
 
 the red command test failed with 22 missing service and command symbols. after implementation, all 9 command tests passed. the forced evidence exception left the assignee null, the claim version at zero, and both evidence tables at one existing submission row. a rejected domain rule also left the stored snapshot and evidence counts unchanged.
+
+## 2026-08-02 22:24
+
+### goal
+
+provide reviewer-friendly claim details, an open work queue, and market exposure without mixing currencies.
+
+### prompt summary
+
+asked ai to seed every lifecycle state across singapore and australia, then test detailed history, missing claims, unfiltered and filtered queues, market isolation, open-state filtering, separate currency groups, and exposure reduction after approval. required database filtering before in-memory grouping and deterministic output ordering.
+
+### ai suggestion
+
+return purpose-built read records instead of persistence entities. query only open rows through `ClaimStore`, sort queue records by submission time, group exposure with a `TreeMap` by currency, and sum each group with `BigDecimal`. keep the detailed view as one snapshot plus its ordered timeline.
+
+### decision
+
+accepted currency-specific exposure rows and open-only queue semantics. while testing, a `100` input returned from the decimal column as `100.00`; fixed the source boundary by storing all accepted losses at two decimal places and rejecting more than two meaningful decimals. rejected a test-only numeric comparator because it would hide inconsistent snapshots and silent database rounding.
+
+### codex skills used
+
+- `superpowers:test-driven-development` required the query contract to fail on 10 missing read symbols before the service was added, then kept the money mismatch as a failing regression until fixed.
+- `superpowers:systematic-debugging` traced the snapshot mismatch to `BigDecimal` scale across the `decimal(19,2)` boundary.
+- `superpowers:verification-before-completion` requires the focused query and domain tests plus the complete build before commit.
+
+### check
+
+the first query run failed compilation as planned. the initial implementation passed 5 of 6 tests; the remaining failure showed `100` versus `100.00`. after canonical money validation, 6 query tests and 19 domain tests passed together. singapore exposure was `AUD 300.00 / 1` and `SGD 300.00 / 2`; approving the `SGD 200.00` claim reduced that group to `SGD 100.00 / 1` without changing the aud group.

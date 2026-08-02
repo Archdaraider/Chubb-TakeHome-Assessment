@@ -55,10 +55,13 @@ public final class Claim {
     if (description == null || description.length() < 10 || description.length() > 2000) {
       throw new DomainRuleException("description_invalid");
     }
-    if (submission.estimatedLoss() == null
-        || submission.estimatedLoss().compareTo(BigDecimal.ZERO) <= 0) {
+    var estimatedLoss = submission.estimatedLoss();
+    if (estimatedLoss == null
+        || estimatedLoss.compareTo(BigDecimal.ZERO) <= 0
+        || estimatedLoss.stripTrailingZeros().scale() > 2) {
       throw new DomainRuleException("estimated_loss_invalid");
     }
+    estimatedLoss = estimatedLoss.setScale(2);
     var currency = upperCode(submission.currency(), 3, "currency_invalid");
 
     return new Claim(
@@ -69,7 +72,7 @@ public final class Claim {
             market,
             submission.incidentAt(),
             description,
-            submission.estimatedLoss(),
+            estimatedLoss,
             currency,
             ClaimStatus.SUBMITTED,
             null,

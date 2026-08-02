@@ -173,6 +173,9 @@ class ClaimTest {
             submission("c", ClaimType.MOTOR, "SG", NOW, "valid details", "0", "SGD"),
             "estimated_loss_invalid"),
         Arguments.of(
+            submission("c", ClaimType.MOTOR, "SG", NOW, "valid details", "1.001", "SGD"),
+            "estimated_loss_invalid"),
+        Arguments.of(
             submission("c", ClaimType.MOTOR, "SG", NOW, "valid details", "1", "SG"),
             "currency_invalid"));
   }
